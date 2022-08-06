@@ -1,0 +1,27 @@
+# What do want?
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: lcp-ming-mongo-pvc
+spec:
+  storageClassName: lcp-ming-mongodb-storage
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+---
+# How do we want it implemented
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: lcp-ming-mongo-pv
+spec:
+  storageClassName: lcp-ming-mongodb-storage
+  capacity:
+    storage: 20Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /mnt/socket/mongodb
+    type: DirectoryOrCreate

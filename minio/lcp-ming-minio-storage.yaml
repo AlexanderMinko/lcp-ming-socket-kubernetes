@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: lcp-ming-minio-pvc
+spec:
+  storageClassName: lcp-ming-minio-storage
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 3Gi
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: lcp-ming-minio-pv
+spec:
+  storageClassName: lcp-ming-minio-storage
+  capacity:
+    storage: 3Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /mnt/socket/minio/
+    type: DirectoryOrCreate

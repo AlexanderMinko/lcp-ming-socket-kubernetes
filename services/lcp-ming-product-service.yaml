@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: lenovo
+  name: lcp-ming-product-management
+spec:
+  selector:
+    matchLabels:
+      app: lcp-ming-product-management
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: lcp-ming-product-management
+    spec:
+      containers:
+        - name: lcp-ming-product-management
+          image: lcp-ming-product-service:v1
+          ports:
+            - containerPort: 8090
+          env:
+            - name: MONGODB_HOST
+              value: lcp-ming-mongodb-service
+            - name: KAFKA_HOST
+              value: lcp-ming-kafka-service:9092
+            - name: KEYCLOAK_HOST
+              value: http://192.168.49.2:32000
+            - name: CLIENT_SECRET
+              value: 5xJmxnkuwxTyOwGCa83rOVRudpGSNnUt
+            - name: ACCOUNT_SERVICE_BASE_URL
+              value: http://192.168.49.2:32476
+            - name: MINIO_URL
+              value: http://192.168.49.2:31900
+          imagePullPolicy: IfNotPresent
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: lenovo
+  name: lcp-ming-product-service
+spec:
+  selector:
+    app: lcp-ming-product-management
+  ports:
+    - protocol: TCP
+      port: 8090
+      nodePort: 31090
+  type: NodePort
+---
+apiVersion: getambassador.io/v2
+kind: Mapping
+metadata:
+  namespace: lenovo
+  name: lcp-ming-product-service-mapping
+spec:
+  prefix: /product-service/
+  rewrite: /product-service/
+  service: lcp-ming-product-service.lenovo:8090

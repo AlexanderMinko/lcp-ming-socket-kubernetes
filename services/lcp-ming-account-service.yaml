@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: lenovo
+  name: lcp-ming-account-management
+spec:
+  selector:
+    matchLabels:
+      app: lcp-ming-account-management
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: lcp-ming-account-management
+    spec:
+      containers:
+        - name: lcp-ming-account-management
+          image: lcp-ming-account-service:v1
+          ports:
+            - containerPort: 8094
+          env:
+            - name: MONGODB_HOST
+              value: lcp-ming-mongodb-service
+            - name: KAFKA_HOST
+              value: lcp-ming-kafka-service:9092
+            - name: KEYCLOAK_HOST
+              value: http://192.168.49.2:32000
+            - name: MINIO_URL
+              value: http://192.168.49.2:31900
+          imagePullPolicy: IfNotPresent
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: lenovo
+  name: lcp-ming-account-service
+spec:
+  selector:
+    app: lcp-ming-account-management
+  ports:
+    - protocol: TCP
+      port: 8094
+      nodePort: 31094
+  type: NodePort
+---
+apiVersion: getambassador.io/v2
+kind: Mapping
+metadata:
+  namespace: lenovo
+  name: lcp-ming-account-service-mapping
+spec:
+  prefix: /account-service/
+  rewrite: /account-service/
+  service: lcp-ming-account-service.lenovo:8094

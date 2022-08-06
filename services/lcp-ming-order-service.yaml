@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: lenovo
+  name: lcp-ming-order-management
+spec:
+  selector:
+    matchLabels:
+      app: lcp-ming-order-management
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: lcp-ming-order-management
+    spec:
+      containers:
+        - name: lcp-ming-order-management
+          image: lcp-ming-order-service:v1
+          ports:
+            - containerPort: 8091
+          env:
+            - name: MONGODB_HOST
+              value: lcp-ming-mongodb-service
+            - name: KAFKA_HOST
+              value: lcp-ming-kafka-service:9092
+            - name: KEYCLOAK_HOST
+              value: http://192.168.49.2:32000
+            - name: CLIENT_SECRET
+              value: 5xJmxnkuwxTyOwGCa83rOVRudpGSNnUt
+            - name: PRODUCT_SERVICE_URL
+              value: http://192.168.49.2:32476
+            - name: API_HOST
+              value: http://192.168.49.2:32476
+          imagePullPolicy: IfNotPresent
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: lenovo
+  name: lcp-ming-order-service
+spec:
+  selector:
+    app: lcp-ming-order-management
+  ports:
+    - protocol: TCP
+      port: 8091
+      nodePort: 31091
+  type: NodePort
+---
+apiVersion: getambassador.io/v2
+kind: Mapping
+metadata:
+  namespace: lenovo
+  name: lcp-ming-order-service-mapping
+spec:
+  prefix: /order-service/
+  rewrite: /order-service/
+  service: lcp-ming-order-service.lenovo:8091

@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: lenovo
+  name: lcp-ming-mysql
+  labels:
+    app: lcp-ming-mysql
+spec:
+  selector:
+    matchLabels:
+      app: lcp-ming-mysql
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: lcp-ming-mysql
+      name: lcp-ming-mysql-service
+    spec:
+      containers:
+        - image: mysql:8.0
+          name: lcp-ming-mysql
+          env:
+            - name: MYSQL_DATABASE
+              value: keycloak
+            - name: MYSQL_USER
+              value: user
+            - name: MYSQL_PASSWORD
+              value: root
+            - name: MYSQL_ROOT_PASSWORD
+              value: root
+          ports:
+            - containerPort: 3306
+          volumeMounts:
+            - mountPath: /var/lib/mysql
+              name: keycloak-mysql-persistent-storage
+      volumes:
+        - name: keycloak-mysql-persistent-storage
+          persistentVolumeClaim:
+            claimName: lcp-ming-keycloak-mysql-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: lenovo
+  labels:
+    app: lcp-ming-mysql
+  name: lcp-ming-mysql-service
+spec:
+  ports:
+    - port: 3306
+      targetPort: 3306
+  selector:
+    app: lcp-ming-mysql
+  type: ClusterIP

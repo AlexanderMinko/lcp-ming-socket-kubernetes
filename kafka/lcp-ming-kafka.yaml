@@ -1,0 +1,91 @@
+--- #-------------------ZOOKEEPER----------------------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: lenovo
+  name: lcp-ming-zookeeper
+spec:
+  selector:
+    matchLabels:
+      app: lcp-ming-zookeeper
+  replicas: 1
+  template: # template for the pods
+    metadata:
+      labels:
+        app: lcp-ming-zookeeper
+    spec:
+      containers:
+        - name: lcp-ming-zookeeper
+          image: confluentinc/cp-zookeeper:5.0.1
+          ports:
+            - containerPort: 2181
+          env:
+            - name: ZOOKEEPER_CLIENT_PORT
+              value: "2181"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: lenovo
+  name: lcp-ming-zookeeper-service
+spec:
+  selector:
+    app: lcp-ming-zookeeper
+  ports:
+    - name: endpoint
+      port: 2181
+  type: ClusterIP
+
+#-------------------KAFKA----------------------
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: lenovo
+  name: lcp-ming-kafka
+spec:
+  selector:
+    matchLabels:
+      app: lcp-ming-kafka
+  replicas: 1
+  template: # template for the pods
+    metadata:
+      name: lcp-ming-kafka
+      labels:
+        app: lcp-ming-kafka
+    spec:
+      containers:
+        - name: lcp-ming-kafka
+          image: confluentinc/cp-kafka:5.0.1
+          ports:
+            - containerPort: 9092
+          env:
+            - name: MY_POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: KAFKA_ZOOKEEPER_CONNECT
+              value: "lcp-ming-zookeeper-service:2181"
+            - name: KAFKA_ADVERTISED_LISTENERS
+              value: PLAINTEXT://lcp-ming-kafka-service:9092
+            - name: KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR
+              value: "1"
+            - name: KAFKA_ADVERTISED_HOST_NAME
+              value: $(MY_POD_IP)
+            - name: KAFKA_BROKER_ID
+              value: "1"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: lenovo
+  name: lcp-ming-kafka-service
+spec:
+  selector:
+    app: lcp-ming-kafka
+  ports:
+    - name: endpoint
+      port: 9092
+  clusterIP: None

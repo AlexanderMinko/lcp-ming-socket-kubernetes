@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: lenovo
+  name: lcp-ming-ui-portal-app
+spec:
+  selector:
+    matchLabels:
+      app: lcp-ming-ui-portal-app
+  replicas: 1
+  template: # template for the pods
+    metadata:
+      labels:
+        app: lcp-ming-ui-portal-app
+    spec:
+      containers:
+        - name: lcp-ming-ui-portal-app
+          image: lcp-ming-ui-portal-app:v1
+          env:
+            - name: KEYCLOAK_URL
+              value: http://192.168.49.2:32000/auth
+            - name: APP_URL
+              value: http://192.168.49.2:31000
+            - name: API_URL
+              value: http://192.168.49.2:32476
+            - name: MINIO_URL
+              value: http://192.168.49.2:31900
+          ports:
+            - containerPort: 80
+          imagePullPolicy: IfNotPresent
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: lenovo
+  name: lcp-ming-ui-portal-app-service
+spec:
+  selector:
+    app: lcp-ming-ui-portal-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+      nodePort: 31000
+  type: NodePort

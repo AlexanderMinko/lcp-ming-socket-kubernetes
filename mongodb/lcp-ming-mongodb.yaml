@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: lenovo
+  name: lcp-ming-mongodb
+  labels:
+    app: lcp-ming-mongodb
+spec:
+  selector:
+    matchLabels:
+      app: lcp-ming-mongodb
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: lcp-ming-mongodb
+      name: lcp-ming-mongodb-service
+    spec:
+      containers:
+        - image: mongo:4.2
+          name: lcp-ming-mongodb
+          ports:
+            - containerPort: 27017
+          volumeMounts:
+            - mountPath: /data/db
+              name: mongo-persistent-storage
+      volumes:
+        - name: mongo-persistent-storage
+          persistentVolumeClaim:
+            claimName: lcp-ming-mongo-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: lenovo
+  name: lcp-ming-mongodb-service
+spec:
+  selector:
+    app: lcp-ming-mongodb
+  ports:
+    - port: 27017
+      targetPort: 27017
+      nodePort: 31017
+  type: NodePort

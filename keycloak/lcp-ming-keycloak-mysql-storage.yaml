@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: lcp-ming-keycloak-mysql-pvc
+spec:
+  storageClassName: lcp-ming-keycloak-mysql-storage
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: lcp-ming-keycloak-mysql-pv
+spec:
+  storageClassName: lcp-ming-keycloak-mysql-storage
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /mnt/socket/keycloak-mysql
+    type: DirectoryOrCreate

@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: lenovo
+  name: lcp-ming-keycloak
+spec:
+  selector:
+    matchLabels:
+      app: lcp-ming-keycloak
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: lcp-ming-keycloak
+    spec:
+      containers:
+        - name: lcp-ming-keycloak
+          image: lcp-ming-keycloak:v1
+          env:
+            - name: DB_VENDOR
+              value: MYSQL
+            - name: DB_ADDR
+              value: lcp-ming-mysql-service
+            - name: DB_DATABASE
+              value: keycloak
+            - name: DB_SCHEMA
+              value: public
+            - name: DB_USER
+              value: user
+            - name: DB_PASSWORD
+              value: root
+            - name: KEYCLOAK_USER
+              value: admin
+            - name: KEYCLOAK_PASSWORD
+              value: admin
+            - name: KAFKA_BROKER_URL
+              value: lcp-ming-kafka-service:9092
+            - name: SYS_PROPS
+              value: --debug
+          ports:
+            - name: http
+              containerPort: 8080
+            - name: https
+              containerPort: 8443
+          imagePullPolicy: Never
+          readinessProbe:
+            httpGet:
+              path: /auth/realms/master
+              port: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: lenovo
+  name: lcp-ming-keycloak-service
+spec:
+  selector:
+    app: lcp-ming-keycloak
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+      nodePort: 32000
+  type: NodePort
